@@ -1,0 +1,9 @@
+Kabi mascot — Copyright (c) 2026 Bryl Lim
+
+This work (artwork, generated Rive files, source code and documentation) is
+licensed under the Creative Commons Attribution 4.0 International License
+(CC BY 4.0). https://creativecommons.org/licenses/by/4.0/
+
+Third-party code is not covered by this license: the Rive web runtime
+(@rive-app/canvas, MIT) is installed from npm and copied into web/vendor at
+build time under its own license.
