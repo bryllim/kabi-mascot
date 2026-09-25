@@ -31,7 +31,8 @@
     "build": "node tools/build.mjs",
     "dev": "node tools/build.mjs && node tools/serve.mjs",
     "serve": "node tools/serve.mjs",
-    "trace": "node tools/trace.mjs"
+    "trace": "node tools/trace.mjs",
+    "build:site": "node tools/build.mjs && node tools/site.mjs"
   },
   "dependencies": {
     "@rive-app/canvas": "^2.43.1"

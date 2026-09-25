@@ -6,3 +6,10 @@ node_modules/
 
 # copied from node_modules by `npm run build`
 web/vendor/
+
+# static site output (npm run build:site) and Vercel link
+site/
+.vercel/
+
+# local env (the Vercel CLI writes a deploy token to .env.local)
+.env*
