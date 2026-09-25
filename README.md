@@ -41,7 +41,7 @@ There are 41 Rive bones and 36 group nodes:
 - **Tail:** 8 bones
 - **Ears:** 2 bones each
 
-The torso, belly, arms, hooves, legs, ears and tail are each one vector path **skinned** to their bone chain, so they bend in smooth curves instead of hinging. The arms are drawn procedurally rather than traced: a chunky, tapered limb (round shoulder, slightly slimmer elbow) sampled every ~12 px along its length. The black hoof-hand is the tip of that same outline past a slanted cuff line, so it always stays flush with the arm. That dense outline, soft skin weights and an elbow cap let the arms bend in smooth, rubbery curves in any direction. The legs use tighter weights and knee caps. The arms are layered in front of the head. Each upper arm contains a bicep bone: flexing scales it, which swells the arm's own outline into a bicep in flex, curls, ready, celebrate and jump. Skin weights are computed automatically from the bind pose each time the file is compiled. Pose helpers spread a spine or neck bend across all their bones, keep the feet flat on the ground, and let the wrists and ear tips trail slightly behind the rest of the motion.
+The torso, belly, arms, hooves, legs, ears and tail are each one vector path **skinned** to their bone chain, so they bend in smooth curves instead of hinging. The arms are drawn procedurally rather than traced: a chunky, tapered limb (round shoulder, slightly slimmer elbow) sampled every ~12 px along its length. The black hoof-hand is the tip of that same outline past a slanted cuff line, so it always stays flush with the arm. That dense outline, soft skin weights and an elbow cap let the arms bend in smooth, rubbery curves in any direction. The legs use tighter weights and knee caps. The head is layered on top of the arms. Each upper arm contains a bicep bone: flexing scales it, which swells the arm's own outline into a bicep in flex, curls, ready, celebrate and jump. Skin weights are computed automatically from the bind pose each time the file is compiled. Pose helpers spread a spine or neck bend across all their bones, keep the feet flat on the ground, and let the wrists and ear tips trail slightly behind the rest of the motion.
 
 ```
 root ─ body ─┬─ tail ─ ●tail1 … ●tail8 ─ tailTip (tuft)
@@ -66,17 +66,19 @@ root ─ body ─┬─ tail ─ ●tail1 … ●tail8 ─ tailTip (tuft)
 | `color` | number | body color: 0 black · 1 blue · 2 red · 3 pink · 4 green · 5 purple · 6 orange · 7 brown |
 | `outline` | bool | light rim around the silhouette, for dark backgrounds |
 | `headOnly` | bool | show just the head, zoomed to fill the frame (avatars, chat bubbles, notifications) |
-| `glasses` | bool | sunglasses on, or pushed up onto the head |
+| `glasses` | bool | sunglasses on, or taken off |
+| `shirt` | bool | black T-shirt with a small gray bull-head logo on the chest |
 | `lookX` / `lookY` | number | −100…100 gaze (1D blend states) |
 | `jump`, `hi`, `poke` | trigger | one-shots that return to the current pose |
 
-The state machine has ten layers that run at the same time:
+The state machine has eleven layers that run at the same time:
 
 - **Body** (poses and one-shots)
 - **Ambient** (tail swish and ear flicks)
 - **Blink**
 - **Face** (moods, plus a surprised flash on `poke`)
 - **Glasses**
+- **Shirt** (`shirt`: fades the T-shirt and sleeves in or out)
 - **Color** (recolors the body and belly, blending over 350 ms)
 - **View** (`headOnly`: fades out everything below the neck and zooms onto the head)
 - **Outline** (`outline`: fades in a stroked copy of each silhouette part, drawn behind all fills)
@@ -100,7 +102,7 @@ The viewer has React, SwiftUI, Android and Flutter snippets.
 There's no Rive editor in this pipeline. The `.riv` is written directly from code.
 
 1. `tools/trace.mjs` segments `reference.jpeg` by color, then vectorizes each part with potrace into `src/character/traced.js`.
-2. `src/character/rig.js` places the parts, builds the bones, draws the arms procedurally and adds the extra art: eyes, brows, mouths, dumbbells, sweat, Zzz and sparkles.
+2. `src/character/rig.js` places the parts, builds the bones, draws the arms procedurally and adds the extra art: eyes, brows, mouths, the T-shirt and its logo, dumbbells, sweat, Zzz and sparkles.
 3. `src/character/animations.js` defines the poses. Limbs are posed by screen angle and converted to bone rotations.
 4. `src/character/index.js` assembles the model and the state machine. Every animation in a layer is padded so that switching states never leaves stale values behind.
 5. `src/riv/compile.js` and `src/riv/writer.js` encode the model in Rive's binary runtime format (v7). The type and property keys come from `rive-runtime`'s generated headers.
@@ -117,6 +119,7 @@ There's no Rive editor in this pipeline. The `.riv` is written directly from cod
 
 ```
 reference.jpeg          source artwork the vectors are traced from
+assets/                 T-shirt logo (logo.png source, logo.svg traced by tools/trace-logo.mjs)
 src/character/          the mascot: traced art, rig, animations, state machine
 src/riv/                model -> .riv compiler (binary writer, skinning, SVG export)
 tools/                  build, trace and dev-server scripts

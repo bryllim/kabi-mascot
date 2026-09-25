@@ -13,10 +13,10 @@ export { POSES, MOODS, ONE_SHOTS };
 // Head-only view: everything below the neck fades out and the root zooms in so
 // the head fills the artboard (for avatars / chat bubbles). Only properties no
 // other layer animates are touched here, so it composes with every pose.
-const HEAD_VIEW = { scale: 1.5, dy: 475 }; // head + ears ~590px wide -> ~885px of the 1000px artboard
+const HEAD_VIEW = { scale: 1.5, dy: 370 }; // head + ears ~590px wide -> ~885px of the 1000px artboard
 const BELOW_NECK = [
   'tail', 'armL', 'armR', 'legLShape', 'legRShape', 'hoofL', 'hoofR', 'kneeCapL', 'kneeCapR',
-  'pelvis', 'torso', 'belly', 'shadow', 'ropeWrap',
+  'pelvis', 'torso', 'belly', 'shadow', 'ropeWrap', 'shirt',
   ...['pelvis', 'torso', 'legLShape', 'legRShape', 'hoofL', 'hoofR', 'kneeCapL', 'kneeCapR'].map((id) => `${id}Outline`),
   'barbellBar', 'barbellCollarL', 'barbellCollarR', 'barbellPlateL', 'barbellPlateR', 'barbellPlateOuterL', 'barbellPlateOuterR',
 ];
@@ -47,6 +47,16 @@ export const SKINS = [
   { name: 'orange', body: '#ee7a2c', belly: '#f9bf92' },
   { name: 'brown', body: '#7a4a2a', belly: '#bf936d' },
 ];
+
+/** T-shirt on/off: fades the shirt body, hem, logo and sleeves. */
+const SHIRT_PARTS = ['shirtBody', 'shirtHem', 'shirtLogo', 'sleeveL', 'sleeveR'];
+function shirtAnimations() {
+  const pose = (on) => SHIRT_PARTS.map((target) => ({ target, prop: 'opacity', keys: [[0, on ? 1 : 0, 'hold']] }));
+  return [
+    { name: 'shirt_on', duration: 0.5, loop: 'loop', fps: 60, tracks: pose(true) },
+    { name: 'shirt_off', duration: 0.5, loop: 'loop', fps: 60, tracks: pose(false) },
+  ];
+}
 
 /** Outline on/off: fades every outline copy's stroke in or out. */
 function outlineAnimations(palette) {
@@ -204,9 +214,10 @@ export const INPUTS = [
   { name: 'pose', type: 'number', value: 0, description: `Body pose: ${POSES.map((p, i) => `${i}=${p}`).join(', ')}` },
   { name: 'mood', type: 'number', value: 0, description: `Facial expression: ${MOODS.map((p, i) => `${i}=${p}`).join(', ')}` },
   { name: 'color', type: 'number', value: 0, description: `Body color: ${SKINS.map((c, i) => `${i}=${c.name}`).join(', ')}` },
+  { name: 'shirt', type: 'bool', value: true, description: 'T-shirt with the logo on the chest' },
   { name: 'outline', type: 'bool', value: false, description: 'Light rim around the silhouette, for dark backgrounds' },
   { name: 'headOnly', type: 'bool', value: false, description: 'Show just the head, zoomed to fill the frame (avatars, chat bubbles)' },
-  { name: 'glasses', type: 'bool', value: true, description: 'Sunglasses on (true) or pushed up on the head (false)' },
+  { name: 'glasses', type: 'bool', value: true, description: 'Sunglasses on (true) or taken off (false)' },
   { name: 'lookX', type: 'number', value: 0, description: 'Gaze, -100 (left) .. 100 (right)' },
   { name: 'lookY', type: 'number', value: 0, description: 'Gaze, -100 (up) .. 100 (down)' },
   { name: 'jump', type: 'trigger', description: 'One-shot celebratory hop' },
@@ -254,6 +265,7 @@ export function buildStateMachine() {
   const glasses = toggle('Glasses', 'glasses', 'glasses_on', 'glasses_off', 380);
   const view = toggle('View', 'headOnly', 'view_head', 'view_full', 220);
   const outline = toggle('Outline', 'outline', 'outline_on', 'outline_off', 250);
+  const shirt = toggle('Shirt', 'shirt', 'shirt_on', 'shirt_off', 300);
   const skinStates = SKINS.map((c) => `color_${c.name}`);
   const color = {
     name: 'Color',
@@ -277,6 +289,7 @@ export function buildStateMachine() {
       color,
       view,
       outline,
+      shirt,
       blend('LookX', 'lookX', [['look_left', -100], ['look_center', 0], ['look_right', 100]]),
       blend('LookY', 'lookY', [['look_up', -100], ['look_middle', 0], ['look_down', 100]]),
     ],
@@ -296,6 +309,7 @@ export function buildModel() {
   }
   animations.push(...skinAnimations(shapes));
   animations.push(...outlineAnimations(PALETTE));
+  animations.push(...shirtAnimations());
   // Zooming scales around the root (the ground point), so the root also moves
   // down by HEAD_VIEW.dy to bring the enlarged head back to the artboard centre.
   const root = nodes.find((n) => n.id === 'root');
@@ -309,7 +323,7 @@ export function buildModel() {
   padLayer(lookX, objects); padLayer(lookY, objects);
 
   return {
-    format: 'kabi-model@29',
+    format: 'kabi-model@30',
     name: 'Kabi',
     artboard: { name: 'Kabi', width: ARTBOARD.width, height: ARTBOARD.height },
     palette: { ...PALETTE },

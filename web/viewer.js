@@ -26,11 +26,24 @@ const MOMENTS = [
   { name: 'Boxing', hint: 'jab-cross · proud', pose: 'boxing', mood: 'proud' },
   { name: 'Jump rope', hint: 'skipping · happy', pose: 'jumpRope', mood: 'happy' },
   { name: 'Sprint', hint: 'high knees · determined', pose: 'highKnees', mood: 'determined' },
-  { name: 'Almost there', hint: 'tired · tired, shades up', pose: 'tired', mood: 'tired', glasses: false },
+  { name: 'Almost there', hint: 'tired · tired, shades off', pose: 'tired', mood: 'tired', glasses: false },
   { name: 'New PR!', hint: 'celebrate · happy', pose: 'celebrate', mood: 'happy', glasses: false },
   { name: 'Strong', hint: 'flex · proud', pose: 'flex', mood: 'proud', glasses: true },
   { name: 'Streak lost', hint: 'idle · sad', pose: 'idle', mood: 'sad', glasses: false },
   { name: 'Rest day', hint: 'sleep · sleepy', pose: 'sleep', mood: 'sleepy', glasses: false },
+  { name: 'Coach mode', hint: 'hands on hips · proud', pose: 'handsOnHips', mood: 'proud' },
+  { name: 'Let me explain', hint: 'present left · happy', pose: 'presentLeft', mood: 'happy', glasses: false },
+  { name: 'Your plan', hint: 'present right · happy', pose: 'presentRight', mood: 'happy', glasses: false },
+  { name: 'Planning', hint: 'thinking · neutral, shades off', pose: 'thinking', mood: 'neutral', glasses: false },
+  { name: 'Skipped a day?', hint: 'shrug · surprised, shades off', pose: 'shrug', mood: 'surprised', glasses: false },
+  { name: 'Nice work', hint: 'clap · happy', pose: 'clap', mood: 'happy', glasses: false },
+  { name: 'Goal hit!', hint: 'fist pump · proud', pose: 'fistPump', mood: 'proud' },
+  { name: 'Thanks', hint: 'hand on heart · happy', pose: 'heart', mood: 'happy', glasses: false },
+  { name: 'Check-in', hint: 'listen · neutral, shades off', pose: 'listen', mood: 'neutral', glasses: false },
+  { name: 'No excuses', hint: 'crossed arms · determined', pose: 'crossedArms', mood: 'determined' },
+  { name: 'Whoa!', hint: 'idle · surprised · poke', pose: 'idle', mood: 'surprised', glasses: false, trigger: 'poke' },
+  { name: 'Hop to it', hint: 'ready · happy · jump', pose: 'ready', mood: 'happy', trigger: 'jump' },
+  { name: 'Low energy', hint: 'idle · tired, shades off', pose: 'idle', mood: 'tired', glasses: false },
 ];
 
 function toast(msg) {
@@ -54,8 +67,9 @@ function sync() {
   document.querySelectorAll('#colors .color').forEach((b, i) => b.setAttribute('aria-pressed', String(i === inp.color.value)));
   $('#glasses').checked = inp.glasses.value;
   $('#headOnly').checked = inp.headOnly.value;
+  $('#shirt').checked = inp.shirt.value;
   $('#readout').textContent = `pose ${pose} · ${POSES[pose]}   mood ${mood} · ${MOODS[mood]}`;
-  store.set('kabi.viewer', { pose, mood, color: inp.color.value, glasses: inp.glasses.value, headOnly: inp.headOnly.value });
+  store.set('kabi.viewer', { pose, mood, color: inp.color.value, glasses: inp.glasses.value, headOnly: inp.headOnly.value, shirt: inp.shirt.value });
 }
 
 function buildControls() {
@@ -78,6 +92,7 @@ function buildControls() {
   document.querySelectorAll('[data-trigger]').forEach((b) => (b.onclick = () => fire(b.dataset.trigger)));
   $('#glasses').onchange = (e) => set('glasses', e.target.checked);
   $('#headOnly').onchange = (e) => set('headOnly', e.target.checked);
+  $('#shirt').onchange = (e) => set('shirt', e.target.checked);
   for (const axis of ['lookX', 'lookY']) {
     $(`#${axis}`).oninput = (e) => { $('#follow').checked = false; gaze[axis] = +e.target.value; target[axis] = +e.target.value; };
   }

@@ -14,6 +14,7 @@
 // Limbs, torso and tail are single vector paths skinned to their bone chains,
 // so they bend smoothly instead of hinging like cut-out pieces.
 import traced from './traced.js';
+import { LOGO } from './logo.js';
 import { parsePath, transformContours, contoursToSvg } from '../riv/path.js';
 import { compose, mul, invert, angleOf, apply } from '../riv/math.js';
 
@@ -44,6 +45,9 @@ export const PALETTE = {
   dbRim: '#5c5c63',
   rope: '#9c9ca4',
   shadow: '#00000024',
+  shirt: '#000000',
+  shirtShade: '#2a2a2e',
+  logo: '#9a9aa0',
   outline: '#5c5b62',
 };
 
@@ -57,7 +61,12 @@ export const OUTLINE_PARTS = [
 export const OUTLINE_WIDTH = 14; // half of it shows outside the fill
 
 // Where the exploded reference parts get slid to form the standing character.
-// Legs are raised 20px so their tops tuck up under the torso (no floating gap).
+// Legs are raised 20px so their tops tuck up under the torso (no floating gap),
+// plus LEG_RAISE: shortens the visible legs by sliding them up into the torso
+// (the ground rises with them, so every pose keeps the same leg geometry), and
+// LEG_IN: slides each leg toward the middle so they stand closer together.
+export const LEG_RAISE = 70;
+export const LEG_IN = 25;
 export const PART_OFFSETS = {
   head: [0, 18], hornL: [0, 18], hornR: [0, 18],
   earL: [32, 18], earLInner: [32, 18], earR: [-32, 18], earRInner: [-32, 18],
@@ -65,13 +74,13 @@ export const PART_OFFSETS = {
   muzzle: [-314.5, 2], nostrils: [-314.5, 2], mouth: [-314.5, 2],
   torso: [0, 0], belly: [0, 0],
   armL: [58, 8], handL: [58, 8], armR: [-58, 8], handR: [-58, 8],
-  legL: [10, -20], hoofL: [10, -20], legR: [0, -20], hoofR: [0, -20],
+  legL: [10 + LEG_IN, -20 - LEG_RAISE], hoofL: [10 + LEG_IN, -20 - LEG_RAISE], legR: [-LEG_IN, -20 - LEG_RAISE], hoofR: [-LEG_IN, -20 - LEG_RAISE],
   tailTuft: [0, 0],
 };
 
 // Joints in assembled space (measured from the traced limb centerlines).
 const RAW_JOINTS = {
-  root: [545, 852],
+  root: [545, 852 - LEG_RAISE],
   body: [545, 650],
   chest: [545, 640],
   spine: [[545, 640], [545, 555], [545, 470], [545, 385]],
@@ -80,8 +89,8 @@ const RAW_JOINTS = {
   face: [545, 240],
   armL: [[380, 388], [303, 518], [296, 588], [300, 636]],
   armR: [[715, 388], [792, 518], [794, 586], [792, 632]],
-  legL: [[438, 640], [423, 730], [400, 808], [386, 848]],
-  legR: [[662, 640], [675, 728], [700, 806], [714, 846]],
+  legL: [[438, 640], [423, 730], [400, 808], [386, 848]].map(([x, y]) => [x + LEG_IN, y - LEG_RAISE]),
+  legR: [[662, 640], [675, 728], [700, 806], [714, 846]].map(([x, y]) => [x - LEG_IN, y - LEG_RAISE]),
   earL: [[414, 226], [366, 218], [318, 208]],
   earR: [[678, 226], [726, 218], [774, 208]],
   hornL: [418, 186], hornR: [672, 186],
@@ -200,6 +209,31 @@ function armOutline(S, T, cuff = null) {
   }
   const start = cap(0, width(0) / 2, Math.PI); // round shoulder
   return closedSmooth([...sideA, ...end, ...sideB.reverse(), ...start]);
+}
+
+// T-shirt sleeve over the top of an arm: the arm's own tapered outline from the
+// round shoulder down to `end` px along the arm, `grow` px wider so it sits over
+// the arm, with a hem that can slant (`slope`, px along per px across).
+function sleeveOutline(S, T, { end, grow = 8, slope = 0 }) {
+  const len = Math.hypot(T[0] - S[0], T[1] - S[1]);
+  const dir = [(T[0] - S[0]) / len, (T[1] - S[1]) / len], nrm = [-dir[1], dir[0]];
+  const width = (l) => {
+    const W = ARM.widths;
+    for (let i = 1; i < W.length; i++) if (l <= W[i][0]) return W[i - 1][1] + ((W[i][1] - W[i - 1][1]) * (l - W[i - 1][0])) / (W[i][0] - W[i - 1][0]);
+    return W[W.length - 1][1];
+  } ;
+  const half = (l) => (width(l) + grow) / 2;
+  const P = (l, off) => [S[0] + dir[0] * l + nrm[0] * off, S[1] + dir[1] * l + nrm[1] * off];
+  const endAt = (off) => end + slope * off;
+  const side = (sign) => { const out = []; const stop = endAt(sign * half(end)); for (let l = 0; l <= stop; l += 6) out.push(P(l, sign * half(l))); out.push(P(stop, sign * half(stop))); return out; };
+  const A = side(1), B = side(-1);
+  const hem = [];
+  for (let k = 1; k < 6; k++) { const off = half(end) * (1 - (2 * k) / 6); hem.push(P(endAt(off) + 2, off)); }
+  const r = half(0), cap = Array.from({ length: 7 }, (_, k) => {
+    const a = Math.PI + (Math.PI * (k + 1)) / 8;
+    return [S[0] + (nrm[0] * Math.cos(a) + dir[0] * Math.sin(a)) * r, S[1] + (nrm[1] * Math.cos(a) + dir[1] * Math.sin(a)) * r];
+  });
+  return closedSmooth([...A, ...hem, ...B.reverse(), ...cap]);
 }
 
 // 8 tail bones along a smooth curve through the tail's key points.
@@ -370,6 +404,7 @@ export function buildRig() {
   rel('dumbbellR', 'handR', 0, 0, { opacity: 0, scaleX: 1.95, scaleY: 1.95 });
   // Barbell for leg day: rides across the upper back, just below the chin line.
   node('barbell', 'chest', 545, 398, { opacity: 0 });
+  node('shirt', 'chest', 545, 500); // T-shirt group (hidden in head-only view)
   // Jump rope: a U-shaped loop hanging between the hands. Flipping its scaleY
   // from +1 (under the feet) to -2 (over the head) fakes the rope's rotation.
   node('ropeWrap', 'body', 545, 612); // lets the head-only view hide the rope without touching the pose's own keys
@@ -426,8 +461,19 @@ export function buildRig() {
   tracedShape('torso', 'chest', 'torso', 'body', { skin: SPINE, skinFalloff: 3 });
   tracedShape('belly', 'chest', 'belly', 'belly', { skin: SPINE, skinFalloff: 3 });
 
-  // Barbell plates (monochrome), in front of the torso but behind the head and
-  // arms, wide enough that they sit well outside the gripping hands.
+  // T-shirt: a crew-neck tee just outside the torso silhouette (the neckline hides
+  // under the head), skinned to the spine like the torso so it bends and breathes
+  // with him. Covers the belly; the logo sits small on the left chest.
+  const SHIRT = [[445, 352], [500, 346], [545, 358], [590, 346], [645, 352], [684, 362], [699, 382], [701, 420], [697, 470],
+    [689, 510], [678, 560], [665, 600], [652, 628], [600, 642], [545, 648], [490, 642], [438, 628], [425, 600], [412, 560],
+    [401, 510], [393, 470], [389, 420], [391, 382], [406, 362]];
+  worldArt('shirtBody', 'shirt', closedSmooth(SHIRT), { fill: 'shirt', skin: SPINE, skinFalloff: 3 });
+  worldArt('shirtHem', 'shirt', 'M440 618C480 634 610 634 650 618', { stroke: { color: 'shirtShade', width: 4 }, skin: SPINE, skinFalloff: 3 });
+  const LOGO_AT = [600, 448], LOGO_H = 46;
+  worldArt('shirtLogo', 'shirt', mapPath(LOGO.d, compose(LOGO_AT[0], LOGO_AT[1], 0, LOGO_H / 100, LOGO_H / 100)), { fill: 'logo', evenOdd: true, skin: SPINE, skinFalloff: 3 });
+
+  // Barbell plates (monochrome), in front of the torso but behind the arms and
+  // head, wide enough that they sit well outside the gripping hands.
   for (const x of [-1, 1]) {
     const sd = x < 0 ? 'L' : 'R';
     art(`barbellCollar${sd}`, 'barbell', { d: rr(12, 36, 4), fill: 'dbRim', x: 318 * x });
@@ -435,6 +481,22 @@ export function buildRig() {
     art(`barbellPlateOuter${sd}`, 'barbell', { d: rr(22, 128, 8), fill: 'dbRim', x: 373 * x });
   }
 
+
+  // Arms are drawn in front of the torso but behind the head, so the head always
+  // reads on top (raised arms tuck behind the face).
+  // Each arm is one densely-sampled chunky tapered outline skinned to its bone
+  // chain with soft weights, so every bend is a smooth curve; the traced black
+  // hand from the reference sits over its tip.
+  for (const s of ['L', 'R']) {
+    const bones = [`clavicle${s}`, `upperArm${s}`, `upperArmB${s}`, `bicep${s}`, `forearm${s}`, `forearmB${s}`, `wrist${s}`];
+    const [S, , , T] = JOINTS[`arm${s}`];
+    art(`elbowCap${s}`, `elbow${s}`, { ellipse: { w: 100, h: 100 }, fill: 'body' });
+    worldArt(`arm${s}Shape`, `arm${s}`, armOutline(S, T), { fill: 'body', skin: bones, skinFalloff: 4 });
+    worldArt(`sleeve${s}`, `arm${s}`, sleeveOutline(S, T, { end: 84, grow: 10 }), { fill: 'shirt', skin: bones.slice(0, 4), skinFalloff: 4 });
+    // Black hoof-hand: the tip of the arm's own outline past a slanted cuff (higher
+    // on the inner side, like the reference), so it is always flush with the arm.
+    worldArt(`hand${s}Shape`, `arm${s}`, armOutline(S, T, { at: HAND.at, slope: HAND.slope * (s === 'L' ? 1 : -1), bow: HAND.bow }), { fill: 'hoof', skin: [`forearmB${s}`, `wrist${s}`], skinFalloff: 5 });
+  }
 
   for (const s of ['L', 'R']) {
     const bones = [`ear${s}1`, `ear${s}2`];
@@ -485,20 +547,6 @@ export function buildRig() {
   tracedShape('glassesFrame', 'glasses', 'glasses', 'frame', { local: SHADES });
   tracedShape('glassesLens', 'glasses', 'glassesLens', 'lens', { local: SHADES });
   tracedShape('glassesGlint', 'glasses', 'glassesGlint', 'glint', { local: SHADES });
-
-  // Arms are drawn in front of the head so raised arms pass in front of the face.
-  // Each arm is one densely-sampled chunky tapered outline skinned to its bone
-  // chain with soft weights, so every bend is a smooth curve; the traced black
-  // hand from the reference sits over its tip.
-  for (const s of ['L', 'R']) {
-    const bones = [`clavicle${s}`, `upperArm${s}`, `upperArmB${s}`, `bicep${s}`, `forearm${s}`, `forearmB${s}`, `wrist${s}`];
-    const [S, , , T] = JOINTS[`arm${s}`];
-    art(`elbowCap${s}`, `elbow${s}`, { ellipse: { w: 100, h: 100 }, fill: 'body' });
-    worldArt(`arm${s}Shape`, `arm${s}`, armOutline(S, T), { fill: 'body', skin: bones, skinFalloff: 4 });
-    // Black hoof-hand: the tip of the arm's own outline past a slanted cuff (higher
-    // on the inner side, like the reference), so it is always flush with the arm.
-    worldArt(`hand${s}Shape`, `arm${s}`, armOutline(S, T, { at: HAND.at, slope: HAND.slope * (s === 'L' ? 1 : -1), bow: HAND.bow }), { fill: 'hoof', skin: [`forearmB${s}`, `wrist${s}`], skinFalloff: 5 });
-  }
 
   art('ropeFront', 'rope', { d: ROPE, stroke: { color: 'rope', width: 9, transformAffectsStroke: false }, opacity: 0 });
 

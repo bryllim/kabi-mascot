@@ -322,8 +322,8 @@ const presentLeft = present('L'), presentRight = present('R');
 
 // Hands on hips: elbows out, hooves planted on the hips, chest puffed — the
 // confident coach stance.
-const hipsA = merge(armS('L', 146, 58, { wrist: 22 }), armS('R', 146, 58, { wrist: 22 }), legs(REST_LEG[0] + 3, REST_LEG[1] - 3), spine(0, 0, 0), { chest: { sx: 1.03, sy: 1 }, body: { dy: 0 } });
-const hipsB = merge(armS('L', 148, 56, { wrist: 22 }), armS('R', 148, 56, { wrist: 22 }), spine(0, 0, -2), { chest: { sx: 1.05, sy: 1.02 }, body: { dy: -2 } });
+const hipsA = merge(armS('L', 108, 25, { wrist: 0 }), armS('R', 108, 25, { wrist: 0 }), legs(REST_LEG[0] + 3, REST_LEG[1] - 3), spine(0, 0, 0), { chest: { sx: 1.03, sy: 1 }, body: { dy: 0 } });
+const hipsB = merge(armS('L', 111, 14, { wrist: 0 }), armS('R', 111, 14, { wrist: 0 }), spine(0, 0, -2), { chest: { sx: 1.05, sy: 1.02 }, body: { dy: -2 } });
 const handsOnHips = anim('handsOnHips', 3.2, [[0, hipsA, 'sine'], [1.6, hipsB, 'sine'], [3.2, hipsA]]);
 
 // Clap: forearms swing in front of the chest and meet in the middle.
@@ -555,7 +555,7 @@ const standBody = () => ({
 });
 // Hands planted about shoulder width, arms straight at the top; at the bottom the
 // elbows bend back and out (angles solved with 2-bone IK so the hands stay put).
-const PU = { topDy: 155, botDy: 184 };
+const PU = { topDy: 85, botDy: 114 };
 const armsTop = merge(armS('L', 97, 97), armS('R', 97, 97));
 const armsBottom = merge(armS('L', 135, 49), armS('R', 135, 49));
 const pushup = anim('pushup', 1.7, [
@@ -593,7 +593,7 @@ const burpee = anim('burpee', 2.6, [
 // Front view: the front thigh comes toward the viewer (foreshortened) over a
 // vertical shin; the back shin goes away (foreshortened) so its knee drops toward
 // the floor. Hands on hips, torso tall, alternating legs.
-const hipsHands = merge(armS('L', 125, 31), armS('R', 125, 31));
+const hipsHands = merge(armS('L', 108, 25), armS('R', 108, 25));
 const lungeLegs = (front, depth) => {
   const back = front === 'L' ? 'R' : 'L';
   const F = legS(front, 90.5 + 12 * depth, 97.4 - 4 * depth, 1 - 0.6 * depth);
@@ -726,8 +726,9 @@ export const FACE_ANIMATIONS = [
 // Accessory + look layers
 
 export const GLASSES_ANIMATIONS = [
-  anim('glasses_on', 0.5, [[0, { glasses: { dy: 0, s: 1, rot: 0 } }, 'hold'], [0.5, { glasses: { dy: 0, s: 1, rot: 0 } }]]),
-  anim('glasses_off', 0.5, [[0, { glasses: { dy: -108, s: 0.78, rot: -4 } }, 'hold'], [0.5, { glasses: { dy: -108, s: 0.78, rot: -4 } }]]),
+  anim('glasses_on', 0.5, [[0, { glasses: { dy: 0, s: 1, rot: 0, op: 1 } }, 'hold'], [0.5, { glasses: { dy: 0, s: 1, rot: 0, op: 1 } }]]),
+  // Off: the shades lift away and fade out, leaving Kabi's eyes bare.
+  anim('glasses_off', 0.5, [[0, { glasses: { dy: -108, s: 0.78, rot: -4, op: 0 } }, 'hold'], [0.5, { glasses: { dy: -108, s: 0.78, rot: -4, op: 0 } }]]),
 ];
 const look = (name, p) => anim(name, 0.5, [[0, p, 'hold'], [0.5, p]]);
 export const LOOK_ANIMATIONS = [

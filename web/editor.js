@@ -34,7 +34,7 @@ const history = [], future = [];
 
 function loadModel() {
   const saved = store.get(STORE_KEY);
-  if (saved?.format === 'kabi-model@29') return saved;
+  if (saved?.format === 'kabi-model@30') return saved;
   return buildModel();
 }
 S.model = loadModel();
@@ -551,7 +551,7 @@ function renderSmBar() {
     return s;
   };
   bar.append(sel('pose', POSES), sel('mood', MOODS), sel('color', S.model.meta?.skins || ['black']));
-  for (const b of ['glasses', 'headOnly']) {
+  for (const b of ['glasses', 'shirt', 'headOnly']) {
     const t = h(`<label class="toggle"><span>${b}</span><input type="checkbox" ${inputs[b].value ? 'checked' : ''}/></label>`);
     $('input', t).onchange = (e) => { inputs[b].value = e.target.checked; };
     bar.append(t);
@@ -669,7 +669,7 @@ $('#import').onchange = async (e) => {
   const f = e.target.files[0]; if (!f) return;
   try {
     const m = JSON.parse(await f.text());
-    if (m.format !== 'kabi-model@29') throw new Error('not a Kabi model');
+    if (m.format !== 'kabi-model@30') throw new Error('not a Kabi model');
     compileModel(m);
     S.model = m; S.key = null; commit(); toast('Model imported');
   } catch (err) { toast(`Import failed: ${err.message}`); }
