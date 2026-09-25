@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kabi Pose Lab</title>
+<style>
+  body { margin: 0; font: 12px -apple-system, system-ui, sans-serif; background: #f2f2f2; }
+  #grid { display: grid; grid-template-columns: repeat(var(--cols, 4), 1fr); gap: 8px; padding: 8px; }
+  figure { margin: 0; background: #fff; border-radius: 10px; overflow: hidden; }
+  canvas { width: 100%; aspect-ratio: 1000 / 1200; display: block; }
+  figure.head canvas { aspect-ratio: 1; }
+  figcaption { padding: 4px 8px; color: #444; }
+  .wrap { position: relative; }
+  .rect { position: absolute; outline: 2px solid #f33; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="grid"></div>
+<script src="vendor/rive.js"></script>
+<script type="module">
+// Pose lab: renders several state-machine configurations side by side.
+//   lab.html?cells=idle:happy,thinking:neutral:glassesoff:head&cols=4&t=1.2
+// Each cell is pose[:mood][:glassesoff][:head][:<trigger>!]
+import { mountRive, inputsOf } from './lib/stage.js';
+import { POSES, MOODS } from '../src/character/index.js';
+
+const q = new URLSearchParams(location.search);
+const cells = (q.get('cells') || POSES.join(',')).split(',');
+document.documentElement.style.setProperty('--cols', q.get('cols') || 4);
+if (q.get('bg')) document.head.append(Object.assign(document.createElement('style'), { textContent: `figure { background: #${q.get('bg')} } figcaption { color: #999 }` }));
+const grid = document.getElementById('grid');
+window.labReady = Promise.all(cells.map(async (spec) => {
+  const [pose, ...flags] = spec.split(':');
+  const fig = document.createElement('figure');
+  const canvas = document.createElement('canvas');
+  const head = flags.includes('head');
+  if (head) fig.classList.add('head');
+  const wrap = Object.assign(document.createElement('div'), { className: 'wrap' });
+  wrap.append(canvas);
+  fig.append(wrap, Object.assign(document.createElement('figcaption'), { textContent: spec }));
+  grid.append(fig);
+  const r = await mountRive(canvas, `../dist/kabi.riv?${Date.now()}`, { stateMachine: 'Kabi' });
+  const i = inputsOf(r);
+  i.pose.value = Math.max(0, POSES.indexOf(pose));
+  const mood = flags.find((f) => MOODS.includes(f));
+  if (mood) i.mood.value = MOODS.indexOf(mood);
+  if (flags.includes('glassesoff')) i.glasses.value = false;
+  if (head) i.headOnly.value = true;
+  if (flags.includes('outline')) i.outline.value = true;
+  for (const f of flags) if (f.endsWith('!')) i[f.slice(0, -1)]?.fire();
+  if (q.get('t')) setTimeout(() => r.pause(), +q.get('t') * 1000);
+  // rect=x,y,w,h (artboard units) outlines a crop region, e.g. the app's framings.
+  const rect = q.get(head ? 'headRect' : 'rect');
+  if (rect) {
+    const [x, y, w, h] = rect.split(',').map(Number);
+    const cw = canvas.clientWidth, ch = canvas.clientHeight, s = Math.min(cw / 1000, ch / 1200);
+    const ox = (cw - 1000 * s) / 2, oy = (ch - 1200 * s) / 2;
+    wrap.append(Object.assign(document.createElement('div'), { className: 'rect', style: `left:${ox + x * s}px;top:${oy + y * s}px;width:${w * s}px;height:${h * s}px` }));
+  }
+  return r;
+}));
+</script>
+</body>
+</html>

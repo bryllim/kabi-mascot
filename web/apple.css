@@ -1,0 +1,163 @@
+
+/* =============================================================================
+   Apple-style monochrome theme shared by the viewer and editor (body.apple):
+   SF Pro Rounded, no borders, soft fills and shadows, black/white/gray only.
+   ============================================================================= */
+.apple {
+  --paper: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f2f2f7;
+  --fill: rgba(120, 120, 128, 0.12);
+  --fill-hover: rgba(120, 120, 128, 0.2);
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #8e8e93;
+  --line: rgba(60, 60, 67, 0.1);
+  --accent: #1d1d1f;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(120, 120, 128, 0.16);
+  --radius: 18px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 24px rgba(0, 0, 0, 0.06);
+  --display: 'SF Pro Rounded', ui-rounded, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --text: 'SF Pro Rounded', ui-rounded, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: var(--text);
+  letter-spacing: -0.01em;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .apple {
+    --paper: #000000;
+    --surface: #1c1c1e;
+    --surface-2: #2c2c2e;
+    --fill: rgba(120, 120, 128, 0.24);
+    --fill-hover: rgba(120, 120, 128, 0.34);
+    --ink: #f5f5f7;
+    --ink-2: #aeaeb2;
+    --ink-3: #8e8e93;
+    --line: rgba(84, 84, 88, 0.45);
+    --accent: #f5f5f7;
+    --accent-ink: #000000;
+    --accent-soft: rgba(120, 120, 128, 0.3);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 6px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* surfaces */
+.apple .topbar {
+  border-bottom: 0; background: color-mix(in srgb, var(--paper) 80%, transparent);
+  backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+.apple .card { border: 0; box-shadow: var(--shadow); border-radius: var(--radius); }
+.apple .stage { border: 0; box-shadow: var(--shadow); border-radius: var(--radius); --sa: #fbfbfd; --sb: #eeeef2; }
+.apple .stage[data-bg='white'] { --sa: #ffffff; --sb: #ffffff; }
+.apple .stage[data-bg='gray'] { --sa: #e5e5ea; --sb: #d2d2d7; }
+.apple .stage[data-bg='dark'] { --sa: #2c2c2e; --sb: #1c1c1e; }
+.apple .section { border-bottom: 0; }
+.apple .section + .section { box-shadow: inset 0 1px 0 var(--line); }
+
+/* type */
+.apple .brand b { font: 700 22px/1 var(--display); letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink); }
+.apple .brand b i { color: inherit; } /* one solid color: white in dark mode, near-black in light mode */
+.apple .section h3, .apple .group-label, .apple .tl-bar .name {
+  font: 600 13px/1.2 var(--text); letter-spacing: -0.01em; text-transform: none; color: var(--ink);
+}
+.apple .group-label { color: var(--ink-3); font-size: 12px; }
+.apple .section h3 small { color: var(--ink-3); }
+.apple code, .apple pre, .apple .tree button, .apple .tl-label, .apple .field input, .apple .readout { font-family: var(--text); }
+
+/* buttons, chips, pills: filled, borderless, pill-shaped */
+.apple .btn, .apple .chip, .apple .keybtn {
+  border: 0; background: var(--fill); color: var(--ink); border-radius: 999px; font-weight: 600;
+  transition: background 0.15s, transform 0.1s;
+}
+.apple .btn:hover, .apple .chip:hover, .apple .keybtn:hover { background: var(--fill-hover); border: 0; }
+.apple .btn:active, .apple .chip:active { transform: scale(0.97); }
+.apple .btn.ghost { background: transparent; }
+.apple .btn.ghost:hover { background: var(--fill); }
+.apple .btn.primary { background: var(--ink); color: var(--paper); }
+.apple .btn.primary:hover { background: var(--ink); opacity: 0.85; filter: none; }
+.apple .chip[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+.apple .keybtn { border-radius: 8px; color: var(--ink-3); }
+.apple .keybtn.on, .apple .keybtn.has { color: var(--ink); }
+.apple .keybtn.on { background: var(--ink); color: var(--paper); }
+.apple .pill { border: 0; background: color-mix(in srgb, var(--surface) 80%, transparent); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
+.apple .nav a { color: var(--ink-2); }
+.apple .nav a[aria-current='page'] { background: var(--fill); color: var(--ink); }
+
+/* segmented controls (sidebar tabs + preview mode) */
+.apple .side-tabs {
+  margin: 12px 12px 4px; padding: 3px; border: 0; border-radius: 10px; background: var(--fill); display: flex; gap: 0;
+}
+.apple .side-tabs button { flex: 1; border-radius: 8px; padding: 6px 4px; font-size: 12.5px; color: var(--ink); background: none; }
+.apple .side-tabs button[aria-selected='true'] { background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+.apple .stage .seg { border: 0; background: var(--fill); backdrop-filter: blur(12px); }
+.apple .stage .seg button { color: var(--ink); }
+.apple .stage .seg button[aria-pressed='true'] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+
+/* form controls */
+.apple .field input[type='number'], .apple .field input[type='text'], .apple .field select, .apple .smbar select {
+  border: 0; background: var(--fill); border-radius: 8px;
+}
+.apple .field input:focus, .apple .field select:focus { outline: 2px solid var(--ink-3); outline-offset: 0; }
+.apple .toggle input:checked { background: var(--ink); }
+.apple .toggle input { background: var(--fill-hover); }
+.apple input[type='range'] { accent-color: var(--ink); }
+.apple .swatch-row input[type='color'] { border: 0; background: var(--fill); }
+.apple .swatch { border: 0; box-shadow: 0 0 0 1px var(--line); }
+.apple .swatch[aria-pressed='true'] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+.apple .kbd { border: 0; background: var(--fill); }
+
+/* lists + tree */
+.apple .list button { border-radius: 8px; }
+.apple .list button[aria-selected='true'] { background: var(--accent-soft); color: var(--ink); }
+.apple .tree .bone .ico { color: var(--ink); }
+
+/* state machine test bar */
+.apple .smbar { border: 0; background: color-mix(in srgb, var(--surface) 85%, transparent); box-shadow: var(--shadow); backdrop-filter: blur(16px); }
+.apple .stage .hint { color: var(--ink-3); }
+.apple .stage[data-bg='dark'] .hint { color: #aeaeb2; }
+
+/* timeline */
+.apple .tl-bar { border-bottom: 0; box-shadow: inset 0 -1px 0 var(--line); }
+.apple .tl-head { border-bottom: 0; box-shadow: inset 0 -1px 0 var(--line); }
+.apple .tl-ruler .tick { border-left-color: var(--line); }
+.apple .tl-label, .apple .tl-row { border-bottom-color: transparent; }
+.apple .tl-row:nth-child(4n + 2), .apple .tl-label:nth-child(4n + 1) { background: color-mix(in srgb, var(--fill) 35%, transparent); }
+.apple .tl-label.sel, .apple .tl-row.sel { background: var(--accent-soft); color: var(--ink); }
+.apple .tl-key { background: var(--ink-3); }
+.apple .tl-key.hold { background: color-mix(in srgb, var(--ink-3) 60%, transparent); }
+.apple .tl-key.sel { background: var(--ink); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.apple .tl-playhead { background: var(--ink); }
+.apple .toast { border-radius: 999px; background: var(--ink); color: var(--paper); }
+
+/* Stage overlays follow the stage background, not the page theme. */
+.apple .stage {
+  --ink: #1d1d1f; --ink-2: #6e6e73; --ink-3: #8e8e93; --surface: #ffffff; --paper: #f5f5f7;
+  --fill: rgba(120, 120, 128, 0.14); --fill-hover: rgba(120, 120, 128, 0.22); --line: rgba(60, 60, 67, 0.12);
+  color: var(--ink);
+}
+.apple .stage[data-bg='dark'] {
+  --ink: #f5f5f7; --ink-2: #aeaeb2; --ink-3: #8e8e93; --surface: #3a3a3c; --paper: #1c1c1e;
+  --fill: rgba(120, 120, 128, 0.3); --fill-hover: rgba(120, 120, 128, 0.4); --line: rgba(84, 84, 88, 0.5);
+}
+.apple .stage .seg button { white-space: nowrap; }
+
+/* ---- viewer pieces --------------------------------------------------------- */
+.apple .moment { border: 0; background: var(--fill); border-radius: 14px; transition: background 0.15s, transform 0.1s; }
+.apple .moment:hover { border: 0; background: var(--fill-hover); }
+.apple .moment:active { transform: scale(0.98); }
+.apple .moment[aria-pressed='true'] { background: var(--ink); }
+.apple .moment[aria-pressed='true'] b, .apple .moment[aria-pressed='true'] span { color: var(--paper); }
+.apple .moment span { color: var(--ink-3); }
+.apple .color { border: 0; background: var(--fill); font-weight: 600; }
+.apple .color:hover { background: var(--fill-hover); }
+.apple .color[aria-pressed='true'] { border: 0; background: var(--ink); color: var(--paper); box-shadow: none; }
+.apple .color i { box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.35); }
+.apple pre.code { border: 0; background: var(--fill); border-radius: 12px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+.apple table.kv td { border-top: 0; box-shadow: inset 0 1px 0 var(--line); }
+.apple table.kv td:first-child, .apple table.kv td:nth-child(2) { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+.apple .tabs:not(.side-tabs) { display: inline-flex; padding: 3px; gap: 0; border-radius: 10px; background: var(--fill); }
+.apple .tabs:not(.side-tabs) button { border-radius: 8px; color: var(--ink); padding: 5px 12px; }
+.apple .tabs:not(.side-tabs) button[aria-selected='true'] { background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+.apple .stage .foot .toggle, .apple .stage .hud .toggle { color: var(--ink); }
+
+.apple a.btn, .apple .brand, .apple .nav a { text-decoration: none; }

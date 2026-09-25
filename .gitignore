@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+
+# local tool / editor config
+.claude/
+
+# copied from node_modules by `npm run build`
+web/vendor/

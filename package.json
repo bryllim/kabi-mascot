@@ -1,0 +1,44 @@
+{
+  "name": "kabi-mascot",
+  "version": "1.0.0",
+  "description": "Kabi — an open-source, bone-rigged Rive mascot for workout apps, with a web viewer and editor. The .riv is generated from code.",
+  "keywords": [
+    "rive",
+    "mascot",
+    "animation",
+    "state-machine",
+    "skinning",
+    "bones",
+    "fitness",
+    "workout",
+    "character"
+  ],
+  "homepage": "https://github.com/bryllim/kabi-mascot#readme",
+  "bugs": {
+    "url": "https://github.com/bryllim/kabi-mascot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bryllim/kabi-mascot.git"
+  },
+  "license": "CC-BY-4.0",
+  "author": "Bryl Lim (https://github.com/bryllim)",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "dev": "node tools/build.mjs && node tools/serve.mjs",
+    "serve": "node tools/serve.mjs",
+    "trace": "node tools/trace.mjs"
+  },
+  "dependencies": {
+    "@rive-app/canvas": "^2.43.1"
+  },
+  "devDependencies": {
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0",
+    "potrace": "^2.1.8"
+  }
+}

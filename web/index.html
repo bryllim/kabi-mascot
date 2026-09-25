@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kabi Viewer</title>
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="stylesheet" href="./apple.css" />
+  <style>
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; padding: 16px; max-width: 1400px; margin: 0 auto; }
+    .stage { height: calc(100vh - 100px); min-height: 480px; }
+    .panel { max-height: calc(100vh - 100px); overflow: auto; }
+    .moments { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .moment {
+      text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 10px; cursor: pointer;
+    }
+    .moment:hover { border-color: var(--ink-3); }
+    .moment[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); }
+    .moment b { display: block; font-size: 13px; }
+    .moment span { font-size: 11.5px; color: var(--ink-3); }
+    .triggers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .readout { font: 12px var(--mono); }
+    .colors { display: flex; flex-wrap: wrap; gap: 8px; }
+    .color {
+      display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 4px; border-radius: 999px;
+      border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 500;
+    }
+    .color i { width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(128,128,128,0.55); }
+    .color[aria-pressed='true'] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+    .stage .foot { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; pointer-events: none; }
+    .stage .foot > * { pointer-events: auto; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; padding: 12px 16px; }
+      .stage { height: 62vh; min-height: 360px; }
+      .panel { max-height: none; }
+    }
+  </style>
+</head>
+<body class="apple">
+  <header class="topbar">
+    <a class="brand" href="./"><b>Ka<i>bi</i></b><span>workout mascot · Rive</span></a>
+    <nav class="nav"><a href="./" aria-current="page">Viewer</a><a href="./editor.html">Editor</a></nav>
+    <div class="spacer"></div>
+    <a class="btn sm" href="../dist/kabi.svg" download>SVG</a>
+    <a class="btn sm primary" href="../dist/kabi.riv" download>Download .riv</a>
+  </header>
+
+  <main class="layout">
+    <section class="stage" id="stage" data-bg="paper">
+      <canvas id="canvas" aria-label="Kabi the bull mascot. Click to poke."></canvas>
+      <div class="hud">
+        <span class="pill readout" id="readout">loading…</span>
+        <div class="spacer"></div>
+        <div class="swatches" role="group" aria-label="Background">
+          <button class="swatch" data-bg="paper" style="background:#f5f5f7" aria-pressed="true" title="Light"></button>
+          <button class="swatch" data-bg="white" style="background:#ffffff" title="White"></button>
+          <button class="swatch" data-bg="gray" style="background:#d2d2d7" title="Gray"></button>
+          <button class="swatch" data-bg="dark" style="background:#1c1c1e" title="Dark"></button>
+        </div>
+      </div>
+      <div class="foot">
+        <label class="pill toggle" style="padding-right:4px"><span>Eyes follow cursor</span><input type="checkbox" id="follow" checked /></label>
+        <span class="pill muted">Tap Kabi to poke</span>
+      </div>
+    </section>
+
+    <aside class="panel card">
+      <div class="section">
+        <h3>Moments <small>pose + mood + gear</small></h3>
+        <div class="moments" id="moments"></div>
+      </div>
+      <div class="section">
+        <h3>Pose <small><code>pose</code> number</small></h3>
+        <div class="chips" id="poses"></div>
+      </div>
+      <div class="section">
+        <h3>Mood <small><code>mood</code> number</small></h3>
+        <div class="chips" id="moods"></div>
+      </div>
+      <div class="section">
+        <h3>Body color <small><code>color</code> number</small></h3>
+        <div class="colors" id="colors" role="group" aria-label="Body color"></div>
+      </div>
+      <div class="section">
+        <h3>Reactions <small>triggers</small></h3>
+        <div class="triggers">
+          <button class="btn" data-trigger="jump">Jump</button>
+          <button class="btn" data-trigger="hi">Say hi</button>
+          <button class="btn" data-trigger="poke">Poke</button>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Gear &amp; view</h3>
+        <label class="toggle"><span>Sunglasses <span class="muted">(<code>glasses</code>)</span></span><input type="checkbox" id="glasses" checked /></label>
+        <label class="toggle"><span>Head only <span class="muted">(<code>headOnly</code>)</span></span><input type="checkbox" id="headOnly" /></label>
+      </div>
+      <div class="section">
+        <h3>Gaze</h3>
+        <div class="range"><label for="lookX">lookX</label><input type="range" id="lookX" min="-100" max="100" value="0" /><output id="lookXv">0</output></div>
+        <div class="range"><label for="lookY">lookY</label><input type="range" id="lookY" min="-100" max="100" value="0" /><output id="lookYv">0</output></div>
+      </div>
+      <div class="section">
+        <h3>Use it in your app</h3>
+        <div class="tabs" role="tablist" id="codeTabs"></div>
+        <pre class="code" id="code"></pre>
+        <h3 style="margin-top:16px">State machine <small><code>Kabi</code></small></h3>
+        <table class="kv" id="inputs"></table>
+      </div>
+    </aside>
+  </main>
+  <div class="toast" id="toast"></div>
+
+  <script src="./vendor/rive.js"></script>
+  <script type="module" src="./viewer.js"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kabi Editor</title>
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="stylesheet" href="./editor.css" />
+  <link rel="stylesheet" href="./apple.css" />
+</head>
+<body class="apple">
+  <header class="topbar">
+    <a class="brand" href="./"><b>Ka<i>bi</i></b><span>rig + animation editor</span></a>
+    <nav class="nav"><a href="./">Viewer</a><a href="./editor.html" aria-current="page">Editor</a></nav>
+    <div class="spacer"></div>
+    <button class="btn sm ghost" id="undo" title="Undo (⌘Z)">Undo</button>
+    <button class="btn sm ghost" id="redo" title="Redo (⇧⌘Z)">Redo</button>
+    <button class="btn sm ghost" id="reset" title="Discard edits and rebuild from source">Reset</button>
+    <label class="btn sm" title="Load a model JSON exported earlier">Import<input type="file" id="import" accept=".json,application/json" hidden /></label>
+    <button class="btn sm" id="exportJson">Model JSON</button>
+    <button class="btn sm" id="exportSvg">SVG</button>
+    <button class="btn sm primary" id="exportRiv">Download .riv</button>
+  </header>
+
+  <main class="editor">
+    <aside class="side card">
+      <div class="tabs side-tabs" role="tablist">
+        <button role="tab" data-tab="animate">Animate</button>
+        <button role="tab" data-tab="rig">Rig</button>
+        <button role="tab" data-tab="colors">Colors</button>
+        <button role="tab" data-tab="states">States</button>
+      </div>
+      <div id="panel" class="panel-body"></div>
+    </aside>
+
+    <section class="center">
+      <div class="stage" id="stage" data-bg="paper">
+        <canvas id="rive"></canvas>
+        <canvas id="overlay"></canvas>
+        <div class="hud">
+          <div class="seg" role="group" aria-label="Preview mode">
+            <button data-mode="anim">Animation</button>
+            <button data-mode="sm">State machine</button>
+          </div>
+          <span class="pill readout" id="status">compiling…</span>
+          <div class="spacer"></div>
+          <label class="pill toggle" style="padding-right:4px"><span>Bones</span><input type="checkbox" id="showBones" checked /></label>
+          <div class="swatches" role="group" aria-label="Background">
+            <button class="swatch" data-bg="paper" style="background:#f5f5f7" aria-pressed="true" title="Light"></button>
+            <button class="swatch" data-bg="white" style="background:#ffffff" title="White"></button>
+            <button class="swatch" data-bg="gray" style="background:#d2d2d7" title="Gray"></button>
+            <button class="swatch" data-bg="dark" style="background:#1c1c1e" title="Dark"></button>
+          </div>
+        </div>
+        <div class="smbar" id="smbar" hidden></div>
+        <div class="hint" id="hint"></div>
+      </div>
+      <div class="timeline card" id="timeline"></div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+
+  <script src="./vendor/rive.js"></script>
+  <script type="module" src="./editor.js"></script>
+</body>
+</html>
